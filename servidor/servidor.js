@@ -1,9 +1,12 @@
 //paquetes necesarios para el proyecto
-var express = require('express');
+const express = require('express');
 var bodyParser = require('body-parser');
 var cors = require('cors');
 
+
 var app = express();
+
+var controller = require('../servidor/controladores/controller');
 
 app.use(cors());
 
@@ -19,4 +22,10 @@ var puerto = '8080';
 app.listen(puerto, function () {
   console.log( "Escuchando en el puerto " + puerto );
 });
+
+app.get('/peliculas', controller.getPeliculas);
+app.get('/generos', controller.getGeneros);
+app.get('/peliculas/:id', controller.getPelicula);
+app.get('/peliculas/recomendacion', controller.getRecomendacion);
+
 
