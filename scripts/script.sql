@@ -21,6 +21,8 @@ CREATE TABLE genero (
     PRIMARY KEY (id)
 );
 
+ALTER TABLE pelicula ADD COLUMN genero_id INT(2);
+
 CREATE TABLE actor (
     id INT NOT NULL auto_increment,
     nombre VARCHAR(70) NOT NULL,

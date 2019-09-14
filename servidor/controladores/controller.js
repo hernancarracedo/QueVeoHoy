@@ -3,19 +3,16 @@ let conex = require('../lib/conexionbd.js');
 function getPeliculas(req, res){
     var filtros = [];
 
-    let anio = req.query.anio
-    if (anio !== undefined) {
-        filtros.push("anio = "+ anio);
+    if (req.query.anio !== undefined) {
+        filtros.push("anio = "+ req.query.anio);
     }
 
-    let titulo = req.query.titulo
-    if (titulo !== undefined){
-        filtros.push('titulo like "%'+titulo+'%"');
+    if (req.query.titulo !== undefined){
+        filtros.push('titulo like "%' + req.query.titulo + '%"');
     }
 
-    let genero = req.query.genero
-    if (genero !== undefined){
-        filtros.push("genero_id = "+ genero);
+    if (req.query.genero !== undefined){
+        filtros.push("genero_id = "+ req.query.genero);
     }
     
     // recupero el resto de los parametros de la ruta
@@ -116,12 +113,45 @@ function getPelicula(req, res){
     });
 }
 
-
-
 function getRecomendacion(req, res){
-    console.log('hola mundo');
-}
+    var sql; // en esta variable asignaré la cadena de la query a ejecutar en la DB segun la ruta requerida
+    var filtros = []; // en este array voy a ir agregando todos los filtros del WHERE de la query si hubiera.
 
+    if ((req.query.puntuacion == undefined) && (req.query.anio_inicio == undefined) && (req.query.anio_fin == undefined) && (req.query.genero == undefined)) {
+        sql = "select * FROM pelicula LEFT JOIN genero ON pelicula.genero_id = genero.id";
+    } else {
+        sql = "select * FROM pelicula LEFT JOIN genero ON pelicula.genero_id = genero.id WHERE ";
+
+        if (req.query.puntuacion !== undefined){
+            filtros.push("puntuacion > " + req.query.puntuacion);
+        } 
+        if ((req.query.anio_inicio !== undefined) && (req.query.anio_fin !== undefined)){
+            filtros.push("anio BETWEEN " + req.query.anio_inicio + " AND " + req.query.anio_fin);
+        }
+        if (req.query.genero !== undefined){
+            filtros.push("genero.nombre = '" + req.query.genero +"'");
+        }
+
+        // hago un for para armar la query completa recorriendo array filtros que hice push en las lineas anteriores
+        for (var i=0; i<filtros.length; i++) { 
+            sql = sql + filtros[i];
+            if (i+1 !== filtros.length){ // chequeo si quedan mas filtros para aplicar y agrego un "and "
+                sql = sql + ' AND ';
+            }
+        }
+    }   
+    
+    conex.query(sql, function(error, resultado, fields){
+        if (error) {
+            console.log("Ha ocurrido un error en la consulta", error.message);
+            return res.status(404).send("Ha ocurrido un error en la consulta");
+        }
+        var response = {
+            peliculas : resultado
+        }
+        res.send(JSON.stringify(response));
+    });
+}
 
 module.exports = {
     getPeliculas,
@@ -129,26 +159,3 @@ module.exports = {
     getPelicula,
     getRecomendacion
 };
-
-
-
-/*
-console.log(req.query.puntuacion+'\n');
-console.log(req.query.anio_inicio+'\n');
-console.log(req.query.anio_fin+'\n');
-console.log(req.query.genero+'\n');
-*/
-/*
-var sqlRec = "select * FROM pelicula WHERE id = 10";
-
-conex.query(sqlRec, function(error, resultadoRec, fields){
-    if (error) {
-        console.log("Ha ocurrido un error en la consulta", error.message);
-        return res.status(404).send("Ha ocurrido un error en la consulta");
-    }
-    var response = {
-        peliculas : resultadoRec[0]
-    }
-    res.send(JSON.stringify(response));
-});
-*/

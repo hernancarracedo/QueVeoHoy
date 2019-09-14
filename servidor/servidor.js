@@ -23,9 +23,10 @@ app.listen(puerto, function () {
   console.log( "Escuchando en el puerto " + puerto );
 });
 
+app.get('/peliculas/recomendacion', controller.getRecomendacion);
 app.get('/peliculas', controller.getPeliculas);
 app.get('/generos', controller.getGeneros);
 app.get('/peliculas/:id', controller.getPelicula);
-app.get('/peliculas/recomendacion', controller.getRecomendacion);
+
 
 
